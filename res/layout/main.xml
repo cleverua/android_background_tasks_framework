@@ -7,11 +7,11 @@
 <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="Press the button to import structures"
+    android:text="Hey, this is a demo activity. Just invoke the task using the button below. During it you can rotate the device, press home and get back to this screen, receive calls etc. All these actions will not affect the background task."
     />
 <Button
 	android:id="@+id/the_button"
 	android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="Press the button to import structures" />
+    android:text="Invoke the background task" />
 </LinearLayout>
