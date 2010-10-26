@@ -42,10 +42,10 @@ public class BgTasksService extends IntentService {
 
         SystemClock.sleep(5 * 1000); // this is a JOB ;)
 
-        if (isCancelled(MyApplication.TaskEnum.valueOf(taskId))) {
-            // app.onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId));
+        if (!isCancelled(MyApplication.TaskEnum.valueOf(taskId))) {
+            app.onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId));
             // uncomment to see error response
-            app.onTaskError(MyApplication.TaskEnum.valueOf(taskId), 1);
+            // app.onTaskError(MyApplication.TaskEnum.valueOf(taskId), 1);
         } else {
             Log.d(TAG, "Task: " + taskId + " has been cancelled, doing nothing");
         }
@@ -53,7 +53,7 @@ public class BgTasksService extends IntentService {
 
     private boolean isCancelled(TaskEnum taskId) {
         MyApplication app = (MyApplication) getApplication();
-        return app.getTaskStatus(taskId) != MyApplication.TaskStatus.VOID;
+        return app.getTaskStatus(taskId) == MyApplication.TaskStatus.VOID;
     }
 
 }
