@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -118,9 +119,16 @@ public class BaseActivity extends Activity {
                 .setCancelable(true)
                 .setNeutralButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        dismissDialog(id);                      
+                        dismissDialog(id);
+                        dialogInformMsg = null;
                     }
-                }).create();
+                })
+                .setOnCancelListener(new OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialogInformMsg = null;
+                    }
+                })
+                .create();
             
         } else if (id == DIALOG_ALERT_ID) {
             return new AlertDialog.Builder(this)
@@ -130,9 +138,16 @@ public class BaseActivity extends Activity {
                 .setCancelable(true)
                 .setNeutralButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        dismissDialog(id);                      
+                        dismissDialog(id);
+                        dialogAlertMsg = null;
                     }
-                }).create();
+                })
+                .setOnCancelListener(new OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialogAlertMsg = null;
+                    }
+                })
+                .create();
         }
         
         return super.onCreateDialog(id);
