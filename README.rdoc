@@ -1,0 +1,30 @@
+== The Trouble
+
+There is a question that is frequently heard from newbies in Android development - "How to arrange long (time consuming) actions on Android?".
+
+For instance, our Activity has a button that invokes creating a new user on remote server (let's call it "job").
+
+On BlackBerry we would:
+
+1. push a non-cancellable progress popup (Dialog screen) saying "Please wait..."
+2. start a thread that fulfills the job
+3. on thread completion close the progress popup
+4. show a popup notifying user with the job result
+
+This approach 99.99% guarantees that (a) we stay on the same screen after the job is over, (b) user just sees the progress popup and waits for job completion. BlackBerry device rotation or whatever can't break the desired workflow.
+
+Pretty strightforward, isn't it?
+
+However on Android the just stated above behaviour is not available "out of the box" or can be easily built. The root of the issue is Android OS may kill app components (Activity is just one type of app components). The cases when the OS may kill an Activity can be devided on 2 main groups:
+
+1. Device configuration changes. 
+Examples: device orientation changes (user rotates the device), hardware keyboard opening, etc.. Here an activity is Always killed unless it is configured to handle those changes by itselt.
+
+2. Activity has gone in background (user don't see it). Here the decision of whether to kill or not depends entirely on OS and its RAM state, in other words the behaviour is undetermined.
+Example: user gets incoming phone call - the Phone app arises immediately, so our app goes in background, at this point OS may decide to kill our app process (or maybe just several activities of our app leaving the entire app process alive) in order to free some RAM.
+
+OK, you say, there's a nice AsyncTask class in Android API that should solve the issue. Why not just use it? There's even a good example[http://code.google.com/p/shelves/source/browse/trunk/Shelves/src/org/curiouscreature/android/shelves/activity/ShelvesActivity.java] of how it should be used. But since there's no guarantee of how long an Activity instance will live the AsyncTask should be cancelled on onSaveInstanceState (and restarted on onRestoreInstanceState). This means using AsyncTask there's no guarantee we are able to fully fulfill the job once started. In some cases as sending an http POST request for creating a new user we would not want to get in "user already exists for this login" trouble on reruning the AsyncTask. This is possible since the AsyncTask can be interrupted while the request is already sent (and the server actually is doing its job - creating a new user), but the AsyncTask is canceled before we got the response.
+
+== The Solution
+
+We have created a framework that provides a BB-like behaviour. Generally speasking we use Service to run jobs and a sophisticated notification mechanism. To see an example, please, launch the Android TasksFramework Demo application in Android device emulator. 
