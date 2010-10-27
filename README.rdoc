@@ -19,7 +19,6 @@ However on Android the just stated above behaviour is not available "out of the 
 
 1. Device configuration changes. 
 Examples: device orientation changes (user rotates the device), hardware keyboard opening, etc.. Here an activity is Always killed unless it is configured to handle those changes by itselt.
-
 2. Activity has gone in background (user don't see it). Here the decision of whether to kill or not depends entirely on OS and its RAM state, in other words the behaviour is undetermined.
 Example: user gets incoming phone call - the Phone app arises immediately, so our app goes in background, at this point OS may decide to kill our app process (or maybe just several activities of our app leaving the entire app process alive) in order to free some RAM.
 
