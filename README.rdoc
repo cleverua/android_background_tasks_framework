@@ -1,6 +1,6 @@
 Congrats, my friends! A true must-have for Android development has been finally rolled out - now we can easily and safely run long background tasks under progress popups in the same way we used to do it on other mobile platforms.
 
-Android TasksFramework Demo[http://assets.cleverua.com/images/android_background_tasks_framework_screenshot.png]
+AndroidTasksFrameworkDemo[http://assets.cleverua.com/images/android_background_tasks_framework_screenshot.png]
 
 == The Trouble
 
