@@ -63,7 +63,7 @@ public class BgTaskActivity extends BaseActivity {
             getApp().invalidateTask(taskId);
         }
         if (status == MyApplication.TaskStatus.ERROR) {
-            alert("Task has failed! Error code: " + getApp().getTaskErrorCode(taskId));
+        	taskFailedMessage();
             getApp().invalidateTask(taskId);
         }
     }
