@@ -54,6 +54,14 @@ public class BaseApplication extends Application {
         }
         return UNKNOWN_ERROR /* Some generic error */;
     }
+    
+	public Object getTaskResult(TaskEnum taskId) {
+		Task task = tasks.get(taskId);
+        if (task != null) {
+            return task.result;
+        }
+        return null;
+	}
 
     public void invalidateTask(TaskEnum taskId) {
         tasks.remove(taskId);
@@ -80,11 +88,12 @@ public class BaseApplication extends Application {
         }
     }
 
-    /* ? */void onTaskCompleted(TaskEnum taskId) {
+    /* ? */void onTaskCompleted(TaskEnum taskId, Object result) {
         logInfo("onTaskCompleted: " + taskId);
         Task task = tasks.get(taskId);
         if (task != null) {
             task.status = TaskStatus.COMPLETED;
+            task.result = result;
             postNotification(task);
 
             Intent intent = new Intent(taskId.name());
@@ -134,14 +143,17 @@ public class BaseApplication extends Application {
     }
 
     private class Task {
-        private TaskStatus status;
+        
+		private TaskStatus status;
         private int errorCode;
         private Class activityClass;
+        private Object result;
 
         private Task(Class activityClass) {
             this.status = TaskStatus.STARTED;
             this.errorCode = UNKNOWN_ERROR;
             this.activityClass = activityClass;
+            this.result = null;
         }
     }
 }

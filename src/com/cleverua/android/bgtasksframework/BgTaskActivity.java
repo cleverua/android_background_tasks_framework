@@ -88,15 +88,17 @@ public class BgTaskActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             log("Received broadcast: " + intent.getExtras());
-            getApp().invalidateTask(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK);
+            
 
             if (intent.getStringExtra(MyApplication.TASK_OUTCOME_EXTRA_KEY).equals(MyApplication.ERROR_OUTCOME)) {
                 final int errorCode = intent.getIntExtra(MyApplication.ERROR_CODE_EXTRA_KEY, MyApplication.UNKNOWN_ERROR);
                 alert("Task has failed! Error code: " + errorCode);
             } else {
-                inform("Task has been completed successfully!");
+                inform("Task has been completed successfully! Result: " + 
+                		getApp().getTaskResult(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK));
             }
 
+            getApp().invalidateTask(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK);
             getApp().cancelBgTaskNotification();
             dismissProgress();
         }

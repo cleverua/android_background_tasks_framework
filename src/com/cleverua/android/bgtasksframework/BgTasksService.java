@@ -43,7 +43,7 @@ public class BgTasksService extends IntentService {
         SystemClock.sleep(5 * 1000); // this is a JOB ;)
 
         if (!isCancelled(MyApplication.TaskEnum.valueOf(taskId))) {
-            app.onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId));
+            app.onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId), "This is result, might be arbitrary object");
             // uncomment to see error response
             // app.onTaskError(MyApplication.TaskEnum.valueOf(taskId), 1);
         } else {
