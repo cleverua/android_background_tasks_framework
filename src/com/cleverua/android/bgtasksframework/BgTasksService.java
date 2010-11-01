@@ -1,7 +1,5 @@
 package com.cleverua.android.bgtasksframework;
 
-import com.cleverua.android.bgtasksframework.MyApplication.TaskEnum;
-
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.SystemClock;
@@ -21,10 +19,29 @@ public class BgTasksService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent: " + intent);
+        
         String taskId = intent.getStringExtra(TASK_ID_EXTRA_KEY);
         Class activityClass = (Class) intent.getSerializableExtra(TASK_ACTIVITY_CLASS_KEY);
-        Log.d(TAG, "Got task id: " + taskId);
+        
+        validateExtras(taskId, activityClass);
+        getApp().onTaskStarted(MyApplication.TaskEnum.valueOf(taskId), activityClass);
 
+        SystemClock.sleep(5 * 1000); // this is a JOB ;)
+
+        if (!isCancelled(taskId)) {
+            getApp().onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId), "This is result, might be arbitrary object");
+            // uncomment to see error response
+            //app.onTaskError(MyApplication.TaskEnum.valueOf(taskId), 1);
+        } else {
+            Log.d(TAG, "Task: " + taskId + " has been cancelled, doing nothing");
+        }
+    }
+
+    private boolean isCancelled(String taskId) {
+        return getApp().getTaskStatus(MyApplication.TaskEnum.valueOf(taskId)) == MyApplication.TaskStatus.VOID;
+    }
+    
+    private void validateExtras(String taskId, Class activityClass) {
         if (taskId == null || taskId.equals("")) {
             throw new RuntimeException("Intent extra " + TASK_ID_EXTRA_KEY + " is required");
         }
@@ -36,24 +53,10 @@ public class BgTasksService extends IntentService {
         if (activityClass == null) {
             throw new RuntimeException("Intent extra " + TASK_ACTIVITY_CLASS_KEY + " is required");
         }
-
-        MyApplication app = (MyApplication) getApplication();
-        app.onTaskStarted(MyApplication.TaskEnum.valueOf(taskId), activityClass);
-
-        SystemClock.sleep(5 * 1000); // this is a JOB ;)
-
-        if (!isCancelled(MyApplication.TaskEnum.valueOf(taskId))) {
-            app.onTaskCompleted(MyApplication.TaskEnum.valueOf(taskId), "This is result, might be arbitrary object");
-            // uncomment to see error response
-            // app.onTaskError(MyApplication.TaskEnum.valueOf(taskId), 1);
-        } else {
-            Log.d(TAG, "Task: " + taskId + " has been cancelled, doing nothing");
-        }
     }
-
-    private boolean isCancelled(TaskEnum taskId) {
-        MyApplication app = (MyApplication) getApplication();
-        return app.getTaskStatus(taskId) == MyApplication.TaskStatus.VOID;
+    
+    private MyApplication getApp() {
+    	return (MyApplication) getApplication();
     }
 
 }

@@ -28,7 +28,7 @@ public class BgTaskActivity extends BaseActivity {
             public void onClick(View v) {
                 log("Starting service");
                 Intent i = new Intent(BgTaskActivity.this, BgTasksService.class);
-                i.putExtra(BgTasksService.TASK_ID_EXTRA_KEY, MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK.name());
+                i.putExtra(BgTasksService.TASK_ID_EXTRA_KEY, MyApplication.TaskEnum.SAMPLE_TASK.name());
                 i.putExtra(BgTasksService.TASK_ACTIVITY_CLASS_KEY, BgTaskActivity.class);
                 startService(i);
                 progress = getProgress();
@@ -47,8 +47,9 @@ public class BgTaskActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        TaskEnum taskId = MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK;
+        TaskEnum taskId = MyApplication.TaskEnum.SAMPLE_TASK;
         registerReceiver(broadcastReceiver, new IntentFilter(taskId.name()));
+        
         MyApplication.TaskStatus status = getApp().getTaskStatus(taskId);
         log("onResume: " + taskId + " status is: " + status);
         if (status == MyApplication.TaskStatus.STARTED) {
@@ -58,48 +59,31 @@ public class BgTaskActivity extends BaseActivity {
             progress.show();
         }
         if (status == MyApplication.TaskStatus.COMPLETED) {
-            inform("Task has been completed successfully!");
+        	taskSuccessMessage();
             getApp().invalidateTask(taskId);
-            getApp().cancelBgTaskNotification();
         }
         if (status == MyApplication.TaskStatus.ERROR) {
             alert("Task has failed! Error code: " + getApp().getTaskErrorCode(taskId));
             getApp().invalidateTask(taskId);
-            getApp().cancelBgTaskNotification();
         }
     }
 
-    private ProgressDialog getProgress() {
-        ProgressDialog p = new ProgressDialog(this);
-        p.setTitle(R.string.app_name);
-        p.setMessage("Operation in progress...");
-        p.setCancelable(true);
-        p.setOnCancelListener(new OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-                log("Progress dialog cancelled");
-                getApp().invalidateTask(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK);
-                dismissProgress();
-            }
-        });
-        return p;
-    }
-
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             log("Received broadcast: " + intent.getExtras());
             
-
-            if (intent.getStringExtra(MyApplication.TASK_OUTCOME_EXTRA_KEY).equals(MyApplication.ERROR_OUTCOME)) {
-                final int errorCode = intent.getIntExtra(MyApplication.ERROR_CODE_EXTRA_KEY, MyApplication.UNKNOWN_ERROR);
-                alert("Task has failed! Error code: " + errorCode);
-            } else {
-                inform("Task has been completed successfully! Result: " + 
-                		getApp().getTaskResult(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK));
+            TaskEnum taskId = MyApplication.TaskEnum.SAMPLE_TASK;
+            MyApplication.TaskStatus status = getApp().getTaskStatus(taskId);
+            
+            if (status == MyApplication.TaskStatus.COMPLETED) {
+            	taskSuccessMessage();
+            }
+            if (status == MyApplication.TaskStatus.ERROR) {
+            	taskFailedMessage();
             }
 
-            getApp().invalidateTask(MyApplication.TaskEnum.DOWNLOAD_IMAGES_TASK);
-            getApp().cancelBgTaskNotification();
+            getApp().invalidateTask(MyApplication.TaskEnum.SAMPLE_TASK);
             dismissProgress();
         }
     };
@@ -109,6 +93,30 @@ public class BgTaskActivity extends BaseActivity {
             progress.dismiss();
         }
         progress = null;
+    }
+    
+    private ProgressDialog getProgress() {
+        ProgressDialog p = new ProgressDialog(this);
+        p.setTitle(R.string.app_name);
+        p.setMessage("Operation in progress...");
+        p.setCancelable(true);
+        p.setOnCancelListener(new OnCancelListener() {
+            public void onCancel(DialogInterface dialog) {
+                log("Progress dialog cancelled");
+                getApp().invalidateTask(MyApplication.TaskEnum.SAMPLE_TASK);
+                dismissProgress();
+            }
+        });
+        return p;
+    }
+    
+    private void taskSuccessMessage() {
+    	inform("Task has been completed successfully! Result: " + 
+        		getApp().getTaskResult(MyApplication.TaskEnum.SAMPLE_TASK));
+    }
+    
+    private void taskFailedMessage() {
+    	alert("Task has failed! Error code: " + getApp().getTaskErrorCode(MyApplication.TaskEnum.SAMPLE_TASK));
     }
 
 }

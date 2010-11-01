@@ -15,16 +15,9 @@ import com.cleverua.android.bgtasksframework.MyApplication.TaskEnum;
 public class BaseApplication extends Application {
 
     public static final int UNKNOWN_ERROR = -1;
+    private static final int TASK_NOTIFICATION_ID = -1000000;
     
-    public static final String ERROR_CODE_EXTRA_KEY   = "error_code";
-    public static final String TASK_OUTCOME_EXTRA_KEY = "outcome";
-
-    public static final String ERROR_OUTCOME     = "error";
-    public static final String COMPLETED_OUTCOME = "completed";
-
     private static Map<TaskEnum, Task> tasks;
-
-    private static final int TASK_NOTIFICATION_ID = 55;
 
     public enum TaskStatus {
         STARTED, ERROR, COMPLETED, VOID
@@ -52,7 +45,7 @@ public class BaseApplication extends Application {
         if (task != null) {
             return task.errorCode;
         }
-        return UNKNOWN_ERROR /* Some generic error */;
+        return UNKNOWN_ERROR;
     }
     
 	public Object getTaskResult(TaskEnum taskId) {
@@ -65,45 +58,37 @@ public class BaseApplication extends Application {
 
     public void invalidateTask(TaskEnum taskId) {
         tasks.remove(taskId);
+        cancelNotification();
     }
 
-    /* ? */void onTaskStarted(TaskEnum taskId, Class activityClass) {
+    protected void onTaskStarted(TaskEnum taskId, Class activityClass) {
         logInfo("onTaskStarted: " + taskId);
         tasks.put(taskId, new Task(activityClass));
     }
 
-    /* ? */void onTaskError(TaskEnum taskId, int errorCode) {
+    protected void onTaskError(TaskEnum taskId, int errorCode) {
         log("onTaskError: " + taskId + ": errorCode: " + errorCode);
         Task task = tasks.get(taskId);
         if (task != null) {
             task.status = TaskStatus.ERROR;
             task.errorCode = errorCode;
             postNotification(task);
-
-            Intent intent = new Intent(taskId.name());
-            intent.putExtra(TASK_OUTCOME_EXTRA_KEY, ERROR_OUTCOME);
-            intent.putExtra(ERROR_CODE_EXTRA_KEY, task.errorCode);
-            log("Sending broadcast that task: " + taskId + " had error: " + task.errorCode);
-            sendBroadcast(intent);
+            postBroadcast(taskId);
         }
     }
 
-    /* ? */void onTaskCompleted(TaskEnum taskId, Object result) {
+    protected void onTaskCompleted(TaskEnum taskId, Object result) {
         logInfo("onTaskCompleted: " + taskId);
         Task task = tasks.get(taskId);
         if (task != null) {
             task.status = TaskStatus.COMPLETED;
             task.result = result;
             postNotification(task);
-
-            Intent intent = new Intent(taskId.name());
-            intent.putExtra(TASK_OUTCOME_EXTRA_KEY, COMPLETED_OUTCOME);
-            log("Sending broadcast that task: " + taskId + " has completed");
-            sendBroadcast(intent);
+            postBroadcast(taskId);
         }
     }
 
-    public final void cancelBgTaskNotification() {
+    private void cancelNotification() {
         getNotificationManager().cancel(TASK_NOTIFICATION_ID);
     }
 
@@ -117,6 +102,10 @@ public class BaseApplication extends Application {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
         notification.setLatestEventInfo(this, "Task completed", "Touch here to open the activity", contentIntent);
         getNotificationManager().notify(TASK_NOTIFICATION_ID, notification);
+    }
+    
+    private void postBroadcast(TaskEnum taskId) {
+        sendBroadcast(new Intent(taskId.name()));
     }
 
     private NotificationManager getNotificationManager() {
