@@ -1,5 +1,7 @@
 package com.cleverua.android.bgtasksframework;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,7 +9,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnKeyListener;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -16,8 +20,9 @@ import com.cleverua.android.bgtasksframework.MyApplication.TaskEnum;
 
 public class BgTaskActivity extends BaseActivity {
 
-    private ProgressDialog progress;
-
+    private static final int PROGRESS_DIALOG_ID = 1;
+    private static final int CANCEL_CONFIRMATION_DIALOG_ID = 2;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,17 +36,60 @@ public class BgTaskActivity extends BaseActivity {
                 i.putExtra(BgTasksService.TASK_ID_EXTRA_KEY, MyApplication.TaskEnum.SAMPLE_TASK.name());
                 i.putExtra(BgTasksService.TASK_ACTIVITY_CLASS_KEY, BgTaskActivity.class);
                 startService(i);
-                progress = getProgress();
-                progress.show();
+                showDialog(PROGRESS_DIALOG_ID);
             }
         });
     }
 
     @Override
+    protected Dialog onCreateDialog(int id) {
+    	Dialog dialog = null;
+    	switch (id) {
+    		case PROGRESS_DIALOG_ID:
+    			ProgressDialog p = new ProgressDialog(this);
+    	        p.setTitle(R.string.app_name);
+    	        p.setMessage("Operation in progress...");
+    	        p.setCancelable(false);
+                p.setOnKeyListener(new OnKeyListener() {
+    				@Override
+    				public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+    					if (keyCode == KeyEvent.KEYCODE_BACK) {
+    						showDialog(CANCEL_CONFIRMATION_DIALOG_ID);
+    						return true;
+    					}
+    					return false;
+    				}
+                });
+                dialog = p;
+    	        break;
+    		case CANCEL_CONFIRMATION_DIALOG_ID:
+    			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    			builder.setMessage("Are you sure you want to exit?")
+    			       .setCancelable(false)
+    			       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+    			           public void onClick(DialogInterface dialog, int id) {
+    	    	                log("Progress dialog cancelled");
+    	    	                getApp().invalidateTask(MyApplication.TaskEnum.SAMPLE_TASK);
+    	    	                hideDialogs();
+    			           }
+    			       })
+    			       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+    			           public void onClick(DialogInterface dialog, int id) {
+    			                dialog.cancel();
+    			           }
+    			       });
+    			dialog = builder.create();
+    			break;
+    		default:
+    			dialog = super.onCreateDialog(id);
+    			break;
+    	}
+    	return dialog;
+    }
+    @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(broadcastReceiver);
-        dismissProgress();
     }
 
     @Override
@@ -52,23 +100,24 @@ public class BgTaskActivity extends BaseActivity {
         
         MyApplication.TaskStatus status = getApp().getTaskStatus(taskId);
         log("onResume: " + taskId + " status is: " + status);
-        if (status == MyApplication.TaskStatus.STARTED) {
-            if (progress == null) {
-                progress = getProgress();
-            }
-            progress.show();
-        }
         if (status == MyApplication.TaskStatus.COMPLETED) {
+        	hideDialogs();
         	taskSuccessMessage();
             getApp().invalidateTask(taskId);
         }
         if (status == MyApplication.TaskStatus.ERROR) {
+        	hideDialogs();
         	taskFailedMessage();
             getApp().invalidateTask(taskId);
         }
     }
 
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private void hideDialogs() {
+    	dismissDialog(PROGRESS_DIALOG_ID);
+    	dismissDialog(CANCEL_CONFIRMATION_DIALOG_ID);
+	}
+
+	private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             log("Received broadcast: " + intent.getExtras());
@@ -84,31 +133,9 @@ public class BgTaskActivity extends BaseActivity {
             }
 
             getApp().invalidateTask(MyApplication.TaskEnum.SAMPLE_TASK);
-            dismissProgress();
+            hideDialogs();
         }
     };
-
-    private void dismissProgress() {
-        if (progress != null) {
-            progress.dismiss();
-        }
-        progress = null;
-    }
-    
-    private ProgressDialog getProgress() {
-        ProgressDialog p = new ProgressDialog(this);
-        p.setTitle(R.string.app_name);
-        p.setMessage("Operation in progress...");
-        p.setCancelable(true);
-        p.setOnCancelListener(new OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-                log("Progress dialog cancelled");
-                getApp().invalidateTask(MyApplication.TaskEnum.SAMPLE_TASK);
-                dismissProgress();
-            }
-        });
-        return p;
-    }
     
     private void taskSuccessMessage() {
     	inform("Task has been completed successfully! Result: " + 
