@@ -6,10 +6,9 @@ import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnKeyListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnKeyListener;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -114,7 +113,12 @@ public class BgTaskActivity extends BaseActivity {
 
     private void hideDialogs() {
     	dismissDialog(PROGRESS_DIALOG_ID);
-    	dismissDialog(CANCEL_CONFIRMATION_DIALOG_ID);
+    	try {
+    		dismissDialog(CANCEL_CONFIRMATION_DIALOG_ID);
+    	}
+    	catch (IllegalArgumentException e) {
+			// this is OK, the dialog might not be shown at all
+		}
 	}
 
 	private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
