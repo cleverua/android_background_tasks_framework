@@ -20,7 +20,7 @@ public class BaseApplication extends Application {
     private static Map<TaskEnum, Task> tasks;
 
     public enum TaskStatus {
-        STARTED, ERROR, COMPLETED, VOID
+        STARTED, ERROR, COMPLETED, CANCELING, VOID
     }
 
     private String tag;
