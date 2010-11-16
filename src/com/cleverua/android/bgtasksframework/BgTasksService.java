@@ -9,8 +9,11 @@ public class BgTasksService extends IntentService {
 
     private static final String TAG = "TasksService";
     
-    public static final String TASK_ACTIVITY_CLASS_KEY = "ACTIVITY_CLASS";
-    public static final String TASK_ID_EXTRA_KEY       = "TASK_ID";
+    public static final String TASK_ACTIVITY_CLASS_KEY    = "ACTIVITY_CLASS";
+    public static final String TASK_ID_EXTRA_KEY          = "TASK_ID";
+    public static final String TASK_STATUS_EXTRA_KEY      = "TASK_STATUS";
+    public static final String TASK_RESULT_EXTRA_KEY	  = "TASK_RESULT";
+    public static final String TASK_ERROR_CODE_EXTRA_KEY  = "TASK_ERROR_CODE";
 
     public BgTasksService() {
         super(TAG);
