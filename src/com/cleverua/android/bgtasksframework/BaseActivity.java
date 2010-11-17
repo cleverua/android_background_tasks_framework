@@ -1,10 +1,16 @@
 package com.cleverua.android.bgtasksframework;
 
+import java.io.Serializable;
+
 import com.cleverua.android.bgtasksframework.R;
+import com.cleverua.android.bgtasksframework.BaseApplication.TaskStatus;
+import com.cleverua.android.bgtasksframework.MyApplication.TaskEnum;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +34,39 @@ public class BaseActivity extends Activity {
         super.onCreate(savedInstanceState);
         isCleanStart = (savedInstanceState == null);
         logInfo("onCreate: isCleanStart = " + isCleanStart);
+        
+        if (isBgServiceIntent(getIntent())) {
+        	backgroundTaskStopped(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        logInfo("onNewIntent");
+        super.onNewIntent(intent);
+        
+        if (isBgServiceIntent(intent)) {
+        	backgroundTaskStopped(intent);
+        }
+    }
+
+    public static boolean isBgServiceIntent(Intent i) {
+        TaskEnum taskId = (TaskEnum)i.getSerializableExtra(BgTasksService.TASK_ID_EXTRA_KEY);
+        TaskStatus taskStatus = (TaskStatus)i.getSerializableExtra(BgTasksService.TASK_STATUS_EXTRA_KEY);
+        return taskId != null && taskStatus != null;
+    }
+
+    private void backgroundTaskStopped(Intent i) {
+        TaskEnum taskId = (TaskEnum)i.getSerializableExtra(BgTasksService.TASK_ID_EXTRA_KEY);
+        TaskStatus taskStatus = (TaskStatus)i.getSerializableExtra(BgTasksService.TASK_STATUS_EXTRA_KEY);
+		Serializable result = i.getSerializableExtra(BgTasksService.TASK_RESULT_EXTRA_KEY);
+		int errorCode = i.getIntExtra(BgTasksService.TASK_ERROR_CODE_EXTRA_KEY, BaseApplication.UNKNOWN_ERROR);
+
+		this.onBackgroundTaskStopped(taskId, taskStatus, result, errorCode);
+    }
+
+    protected void onBackgroundTaskStopped(TaskEnum taskId, TaskStatus taskStatus, Serializable taskResult, int taskErrorCode) {
+    	logInfo("onBackgroundTaskStopped   taskId = " + taskId.name() + " status = " + taskStatus.name());
     }
 
     @Override

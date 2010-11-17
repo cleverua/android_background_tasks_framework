@@ -13,6 +13,10 @@
             </intent-filter>
         </activity>
         
+        <!-- important! we are using a translucent activity as container for a progress dialog -->
+        <activity android:name=".ProgressTaskActivity"
+                  android:theme="@style/Theme.Translucent" />
+        
         <service android:name=".BgTasksService" />
 
     </application>
