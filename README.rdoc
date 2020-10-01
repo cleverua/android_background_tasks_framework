@@ -1,3 +1,4 @@
+The guide for newbies and all the professional ofcourse.
 Congrats, my friends! A true must-have for Android development has been finally rolled out - now we can easily and safely run long background tasks under progress popups in the same way we used to do it on other mobile platforms.
 
 AndroidTasksFrameworkDemo[http://assets.cleverua.com/images/android_background_tasks_framework_screenshot.png]
@@ -29,3 +30,4 @@ OK, you say, there's a nice AsyncTask class in Android API that should solve the
 == The Solution
 
 We have created a framework that provides a BB-like behaviour. Generally speasking we use Service to run jobs and a sophisticated notification mechanism. To see an example, please, launch the Android TasksFramework Demo application in Android device emulator. 
+hope you guys like my work.
